@@ -1,0 +1,167 @@
+import csv
+import numpy as np
+import math
+
+from math import log
+def load_train_features_Csv():
+	lines = csv.reader(open(r'C:\Users\lenovo\Desktop\CS464_HW1_2_Vedat_Mert_Asan\question-4-train-features.csv'))
+	dataset = list(lines)
+	for i in range(len(dataset)):
+		dataset[i] = [float(x) for x in dataset[i]]
+
+	return dataset
+
+def load_train_labels_Csv():
+	lines = csv.reader(open(r'C:\Users\lenovo\Desktop\CS464_HW1_2_Vedat_Mert_Asan\question-4-train-labels.csv'))
+	dataset = list(lines)
+	for i in range(len(dataset)):
+		dataset[i] = [str(x) for x in dataset[i]]
+
+	return dataset
+
+def load_test_features_Csv():
+	lines = csv.reader(open(r'C:\Users\lenovo\Desktop\CS464_HW1_2_Vedat_Mert_Asan\question-4-test-features.csv'))
+	dataset = list(lines)
+	for i in range(len(dataset)):
+		dataset[i] = [float(x) for x in dataset[i]]
+
+	return dataset
+
+def load_test_labels_Csv():
+	lines = csv.reader(open(r'C:\Users\lenovo\Desktop\CS464_HW1_2_Vedat_Mert_Asan\question-4-test-labels.csv'))
+	dataset = list(lines)
+	for i in range(len(dataset)):
+		dataset[i] = [str(x) for x in dataset[i]]
+
+	return dataset
+
+
+
+def separateByClass(dataset, labelset):
+	separated = {'positive':[], 'neutral':[], 'negative':[]}
+	for i in range(len(dataset)):
+		vector = dataset[i]
+		if (labelset[i][0] == 'positive'):
+
+			separated['positive'].append(vector)
+		elif (labelset[i][0] == 'neutral'):
+
+			separated['neutral'].append(vector)
+		elif (labelset[i][0] == 'negative'):
+
+			separated['negative'].append(vector)
+	return separated
+
+def safe_ln(x):
+	result = []
+	for i in range(len(x)):
+		if (x[i] <= 0) :
+			result.append(0)
+		else :
+			result.append(x[i])
+	return result
+
+def separateByMachine(dataset, positive_probability, neutral_probability, negative_probability):
+
+	test_result = {'positive':[], 'neutral':[], 'negative':[]}
+	for i in range(len(dataset)):
+
+
+		vector = dataset[i]
+		is_positive = np.multiply(positive_probability, dataset[i])
+		is_positive = np.sum(is_positive)
+		is_neutral = np.multiply(neutral_probability, dataset[i])
+		is_neutral = np.sum(is_neutral)
+		is_negative = np.multiply(negative_probability, dataset[i])
+		is_negative = np.sum(is_negative)
+		decision = max(is_positive, is_negative, is_neutral)
+		if not(decision > is_neutral) :
+			decision = is_neutral
+		if (decision == is_positive):
+			test_result['positive'].append(vector)
+		elif (decision == is_neutral):
+			test_result['neutral'].append(vector)
+		elif (decision == is_negative):
+			test_result['negative'].append(vector)
+
+	return test_result
+#loading train features data
+trainlist = load_train_features_Csv()
+#loading train labels data
+trainlabels = load_train_labels_Csv()
+
+print(type(trainlabels[2]))
+print(type(trainlabels[2][0]))
+
+train_filename = 'question-4-train-features.csv'
+#loadig success message
+print('Loaded data file {0} with {1} rows'.format(train_filename, len(trainlist)))
+#loadig success message
+train_labels_filename = 'question-4-train-labels.csv'
+
+print('Loaded data file {0} with {1} rows'.format(train_labels_filename, len(trainlabels)))
+
+
+
+print(trainlabels[2])
+print(trainlabels[2][0])
+separated = separateByClass(trainlist,trainlabels)
+print(type(separated))
+print(type(separated['positive']))
+print (separated['positive'][1])
+
+#creating a list which holds how many times used a word for each class with same index
+
+positive_words = np.array([np.array(xi) for xi in separated['positive']])
+neutral_words = np.array([np.array(xi) for xi in separated['neutral']])
+negative_words = np.array([np.array(xi) for xi in separated['negative']])
+
+positive_words = np.sum(positive_words, axis=0)
+neutral_words = np.sum(neutral_words, axis=0)
+negative_words = np.sum(negative_words, axis=0)
+
+print (positive_words[1])
+print (neutral_words[1])
+print (negative_words[1])
+
+sum_positive = sum(positive_words)
+sum_neutral = sum(neutral_words)
+sum_negative = sum(negative_words)
+
+
+positive_words = positive_words/sum_positive
+
+neutral_words = neutral_words/sum_neutral
+
+negative_words = negative_words/sum_negative
+
+
+print (positive_words[0])
+
+#loading train features data
+testlist = load_test_features_Csv()
+#loading train labels data
+testlabels = load_test_labels_Csv()
+
+test_filename = 'question-4-test-features.csv'
+#loadig success message
+print('Loaded data file {0} with {1} rows'.format(test_filename, len(testlist)))
+#loadig success message
+test_labels_filename = 'question-4-test-labels.csv'
+
+print('Loaded data file {0} with {1} rows'.format(test_labels_filename, len(testlabels)))
+
+positive_words = safe_ln(positive_words)
+neutral_words = safe_ln(neutral_words)
+negative_words = safe_ln(negative_words)
+
+test_result = separateByMachine(testlist, positive_words, neutral_words, negative_words)
+
+print(len(test_result['positive']))
+print(len(test_result['neutral']))
+print(len(test_result['negative']))
+
+correct_result = separateByClass(testlist,testlabels)
+#abi burada patladım, test_result ta bulduklarımın ne kadarı doğru onu ölçmek istiyorum
+shared_items = {k: test_result['positive'][k] for k in test_result['positive'] if k not in correct_result['positive']}
+print(len(shared_items))
