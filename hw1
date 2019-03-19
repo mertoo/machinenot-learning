@@ -162,6 +162,8 @@ print(len(test_result['neutral']))
 print(len(test_result['negative']))
 
 correct_result = separateByClass(testlist,testlabels)
-#abi burada patladım, test_result ta bulduklarımın ne kadarı doğru onu ölçmek istiyorum
+#abi burada patladım, test_result ta bulduklarımın ne kadarı doğru onu ölçmek istiyorum kodun kalanı çalışıyor abi
+#correct_result ve test_result taki eleman sayıları eşit içerikleri ise 3 classa ayrılmış çok uzun list elemanları 
+#örneğin [0.0,1.0,0.0 ..... 0.0]
 shared_items = {k: test_result['positive'][k] for k in test_result['positive'] if k not in correct_result['positive']}
 print(len(shared_items))
